@@ -1,0 +1,202 @@
+### Bulletproof React API Test Endpoints
+### Use with REST Client extension in VS Code or similar HTTP client
+
+### Variables
+@baseUrl = http://localhost:3001
+@token = your-jwt-token-here
+
+### Health Check
+GET {{baseUrl}}/healthcheck
+
+###
+
+### Get All Teams (No auth required)
+GET {{baseUrl}}/teams
+
+###
+
+### Register New User (creates new team)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test@example.com",
+  "password": "password123",
+  "teamName": "Test Team"
+}
+
+###
+
+### Register User to Existing Team
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane@example.com",
+  "password": "password123",
+  "teamId": "team_id_from_previous_response"
+}
+
+###
+
+### Login with Seeded Admin User
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@acme.com",
+  "password": "password123"
+}
+
+###
+
+### Login with Seeded Regular User
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane@acme.com",
+  "password": "password123"
+}
+
+###
+
+### Get Current User (requires authentication)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+###
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+### Get Team Members (requires authentication)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+###
+
+### Update User Profile (requires authentication)
+PATCH {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Updated",
+  "lastName": "Name",
+  "email": "updated@example.com",
+  "bio": "Updated bio information"
+}
+
+###
+
+### Delete User (admin only)
+DELETE {{baseUrl}}/users/user_id_here
+Authorization: Bearer {{token}}
+
+###
+
+### Get Discussions (with pagination and search)
+GET {{baseUrl}}/discussions?page=1&search=project&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{token}}
+
+###
+
+### Get Single Discussion
+GET {{baseUrl}}/discussions/discussion_id_here
+Authorization: Bearer {{token}}
+
+###
+
+### Create Discussion (admin only)
+POST {{baseUrl}}/discussions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "New Test Discussion",
+  "body": "This is a test discussion created via API."
+}
+
+###
+
+### Update Discussion (admin only)
+PATCH {{baseUrl}}/discussions/discussion_id_here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Discussion Title",
+  "body": "Updated discussion content."
+}
+
+###
+
+### Delete Discussion (admin only)
+DELETE {{baseUrl}}/discussions/discussion_id_here
+Authorization: Bearer {{token}}
+
+###
+
+### Get Comments for Discussion (with pagination)
+GET {{baseUrl}}/comments?discussionId=discussion_id_here&page=1
+Authorization: Bearer {{token}}
+
+###
+
+### Create Comment
+POST {{baseUrl}}/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "body": "This is a test comment.",
+  "discussionId": "discussion_id_here"
+}
+
+###
+
+### Delete Comment
+DELETE {{baseUrl}}/comments/comment_id_here
+Authorization: Bearer {{token}}
+
+###
+
+### Test Rate Limiting (run multiple times quickly)
+GET {{baseUrl}}/healthcheck
+
+###
+
+### Test Invalid Token
+GET {{baseUrl}}/auth/me
+Authorization: Bearer invalid_token_here
+
+###
+
+### Test Missing Required Fields
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Test"
+}
+
+###
+
+### Test Invalid Email Format
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": "password123"
+}
+
+###

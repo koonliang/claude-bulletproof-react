@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  password  String
+  role      String   @default("USER")
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  teamId      String
+  team        Team         @relation(fields: [teamId], references: [id])
+  discussions Discussion[]
+  comments    Comment[]
+
+  @@map("users")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]
+  discussions Discussion[]
+
+  @@map("teams")
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  teamId   String
+  team     Team   @relation(fields: [teamId], references: [id])
+  comments Comment[]
+
+  @@map("discussions")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+
+  @@map("comments")
+}
+
+// Role values: "USER" | "ADMIN"
+// Using String instead of enum for cross-database compatibility
