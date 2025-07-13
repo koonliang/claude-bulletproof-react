@@ -12,8 +12,8 @@ const registerSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  teamId: z.string().optional(),
-  teamName: z.string().optional(),
+  teamId: z.string().nullable().optional(),
+  teamName: z.string().nullable().optional(),
 });
 
 const loginSchema = z.object({

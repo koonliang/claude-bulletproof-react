@@ -18,7 +18,9 @@
       "Bash(npx tsx:*)",
       "Bash(npm install:*)",
       "Bash(npm test)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(yarn lint)",
+      "Bash(yarn check-types)"
     ],
     "deny": []
   }
