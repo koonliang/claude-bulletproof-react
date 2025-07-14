@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler, createError } from '../middleware/error-handler.js';
 import { authenticate, requireAdmin, AuthenticatedRequest } from '../middleware/auth.js';
+import { hashPassword } from '../utils/auth.js';
 import prisma from '../config/database.js';
 
 const router = Router();
@@ -28,6 +29,15 @@ const userUpdateSchema = z.object({
 
 const roleUpdateSchema = z.object({
   role: z.enum(['USER', 'ADMIN'], { required_error: 'Role is required' }),
+});
+
+const createUserSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email format'),
+  role: z.enum(['USER', 'ADMIN'], { required_error: 'Role is required' }).default('USER'),
+  bio: z.string().optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 // Get all users (team members) with search support
@@ -201,6 +211,49 @@ router.put('/:userId/role', authenticate, requireAdmin, asyncHandler(async (req:
   });
 
   res.json(updatedUser);
+}));
+
+// Create new user (admin only)
+router.post('/', authenticate, requireAdmin, asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const data = createUserSchema.parse(req.body);
+
+  // Check if email is already taken
+  const existingUser = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
+
+  if (existingUser) {
+    throw createError('Email already in use', 400);
+  }
+
+  // Hash password
+  const hashedPassword = await hashPassword(data.password);
+
+  // Create user in admin's team
+  const user = await prisma.user.create({
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      role: data.role,
+      bio: data.bio || '',
+      teamId: req.user!.teamId,
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      teamId: true,
+      bio: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  res.status(201).json(user);
 }));
 
 // Update user profile

@@ -4,6 +4,7 @@ import { ContentLayout } from '@/components/layouts';
 import { getUsersQueryOptions } from '@/features/users/api/get-users';
 import { UsersList } from '@/features/users/components/users-list';
 import { SearchUsers } from '@/features/users/components/search-users';
+import { AddUserButton } from '@/features/users/components/add-user-button';
 import { Authorization, ROLES } from '@/lib/authorization';
 
 export const clientLoader = (queryClient: QueryClient) => async () => {
@@ -23,7 +24,10 @@ const UsersRoute = () => {
         allowedRoles={[ROLES.ADMIN]}
       >
         <div className="flex flex-col gap-4">
-          <SearchUsers />
+          <div className="flex items-center justify-between gap-4">
+            <SearchUsers />
+            <AddUserButton />
+          </div>
           <UsersList />
         </div>
       </Authorization>

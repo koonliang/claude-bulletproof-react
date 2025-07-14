@@ -28,6 +28,15 @@ type UpdateUserRoleBody = {
   role: 'USER' | 'ADMIN';
 };
 
+type CreateUserBody = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
+  bio?: string;
+  password: string;
+};
+
 export const usersHandlers = [
   http.get(`${env.API_URL}/users`, async ({ cookies, request }) => {
     await networkDelay();
@@ -220,6 +229,49 @@ export const usersHandlers = [
       
       await persistDb('user');
       return HttpResponse.json(sanitizeUser(result));
+    } catch (error: any) {
+      return HttpResponse.json(
+        { message: error?.message || 'Server Error' },
+        { status: 500 },
+      );
+    }
+  }),
+
+  // Create new user (admin only)
+  http.post(`${env.API_URL}/users`, async ({ request, cookies }) => {
+    await networkDelay();
+
+    try {
+      const { user, error } = requireAuth(cookies);
+      if (error) {
+        return HttpResponse.json({ message: error }, { status: 401 });
+      }
+      requireAdmin(user);
+
+      const data = (await request.json()) as CreateUserBody;
+
+      // Check if email is already taken
+      const existingUser = db.user.findFirst({
+        where: { email: { equals: data.email } },
+      });
+      
+      if (existingUser) {
+        return HttpResponse.json({ message: 'Email already in use' }, { status: 400 });
+      }
+
+      // Create new user in admin's team
+      const newUser = db.user.create({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: 'hashed_password', // In reality, this would be hashed
+        role: data.role,
+        bio: data.bio || '',
+        teamId: user?.teamId || '',
+      });
+
+      await persistDb('user');
+      return HttpResponse.json(sanitizeUser(newUser), { status: 201 });
     } catch (error: any) {
       return HttpResponse.json(
         { message: error?.message || 'Server Error' },
