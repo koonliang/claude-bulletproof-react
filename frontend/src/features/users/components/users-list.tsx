@@ -1,13 +1,22 @@
+import { useState } from 'react';
+import { useSearchParams } from 'react-router';
+
 import { Spinner } from '@/components/ui/spinner';
 import { Table } from '@/components/ui/table';
 import { formatDate } from '@/utils/format';
 
 import { useUsers } from '../api/get-users';
-
+import { EditUserDrawer } from './edit-user-drawer';
 import { DeleteUser } from './delete-user';
 
 export const UsersList = () => {
-  const usersQuery = useUsers();
+  const [searchParams] = useSearchParams();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  
+  const searchQuery = searchParams.get('search') || '';
+  const usersQuery = useUsers({
+    params: { search: searchQuery },
+  });
 
   if (usersQuery.isLoading) {
     return (
@@ -22,40 +31,59 @@ export const UsersList = () => {
   if (!users) return null;
 
   return (
-    <Table
-      data={users}
-      columns={[
-        {
-          title: 'First Name',
-          field: 'firstName',
-        },
-        {
-          title: 'Last Name',
-          field: 'lastName',
-        },
-        {
-          title: 'Email',
-          field: 'email',
-        },
-        {
-          title: 'Role',
-          field: 'role',
-        },
-        {
-          title: 'Created At',
-          field: 'createdAt',
-          Cell({ entry: { createdAt } }) {
-            return <span>{formatDate(createdAt)}</span>;
+    <>
+      <Table
+        data={users}
+        columns={[
+          {
+            title: 'First Name',
+            field: 'firstName',
+            Cell({ entry: { firstName, id } }) {
+              return (
+                <button
+                  onClick={() => setSelectedUserId(id)}
+                  className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  {firstName}
+                </button>
+              );
+            },
           },
-        },
-        {
-          title: '',
-          field: 'id',
-          Cell({ entry: { id } }) {
-            return <DeleteUser id={id} />;
+          {
+            title: 'Last Name',
+            field: 'lastName',
           },
-        },
-      ]}
-    />
+          {
+            title: 'Email',
+            field: 'email',
+          },
+          {
+            title: 'Role',
+            field: 'role',
+          },
+          {
+            title: 'Created At',
+            field: 'createdAt',
+            Cell({ entry: { createdAt } }) {
+              return <span>{formatDate(createdAt)}</span>;
+            },
+          },
+          {
+            title: '',
+            field: 'id',
+            Cell({ entry: { id } }) {
+              return <DeleteUser id={id} />;
+            },
+          },
+        ]}
+      />
+      {selectedUserId && (
+        <EditUserDrawer
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
+    </>
   );
 };
