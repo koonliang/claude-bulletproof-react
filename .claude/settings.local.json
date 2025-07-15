@@ -25,7 +25,8 @@
       "Bash(timeout 30 yarn lint)",
       "Bash(npx prisma migrate:*)",
       "Bash(timeout 5 npm run dev)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(yarn lint:*)"
     ],
     "deny": []
   }

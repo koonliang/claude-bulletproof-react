@@ -118,7 +118,12 @@ export const AddUserDrawer = ({ isOpen, onClose }: AddUserDrawerProps) => {
                     />
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="password-input" className="text-sm font-medium">Password</label>
+                        <label
+                          htmlFor="password-input"
+                          className="text-sm font-medium"
+                        >
+                          Password
+                        </label>
                         <Button
                           type="button"
                           variant="outline"
