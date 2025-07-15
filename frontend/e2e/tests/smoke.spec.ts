@@ -28,7 +28,10 @@ test('smoke', async ({ page }) => {
     .click();
 
   // visit discussion page:
-  await page.getByRole('link', { name: 'View' }).click();
+  await page.getByPlaceholder('Search discussions...').click();
+  await page.getByPlaceholder('Search discussions...').fill(discussion.title);
+  await page.waitForTimeout(3000);
+  await page.getByRole('link', { name: 'View' }).first().click();
 
   await expect(
     page.getByRole('heading', { name: discussion.title }),
@@ -81,15 +84,18 @@ test('smoke', async ({ page }) => {
   // go back to discussions:
   await page.getByRole('link', { name: 'Discussions' }).click();
   await page.waitForURL('/app/discussions');
+  await page.getByPlaceholder('Search discussions...').click();
+  await page.getByPlaceholder('Search discussions...').fill(discussion.title);
+  await page.waitForTimeout(3000);
 
   // delete discussion:
-  await page.getByRole('button', { name: 'Delete Discussion' }).click();
+  await page.getByRole('button', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Delete Discussion' }).click();
   await page
     .getByLabel('Discussion Deleted')
     .getByRole('button', { name: 'Close' })
     .click();
   await expect(
-    page.getByRole('heading', { name: 'No Entries Found' }),
+    page.getByText('No discussions found for "' + discussion.title + '"'),
   ).toBeVisible();
 });
