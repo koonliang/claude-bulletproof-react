@@ -133,14 +133,8 @@ const setupMocks = () => {
     } else if (where.email && userStore[where.email]) {
       user = userStore[where.email];
     } else {
-      // Fallback to generating a user if not found in store
-      if (where.id) {
-        user = generateUser({ id: where.id });
-      } else if (where.email) {
-        user = generateUser({ email: where.email });
-      } else {
-        return null;
-      }
+      // Return null for non-existent users (realistic behavior)
+      return null;
     }
     
     // Handle select clause - if select is provided, only return selected fields
@@ -157,9 +151,145 @@ const setupMocks = () => {
     return user;
   });
 
-  prismaMock.user.update.mockImplementation(async ({ where, data, include }) => {
-    const user = generateUser({ id: where.id, ...data });
-    if (include?.team) user.team = generateTeam({ id: user.teamId });
+  prismaMock.user.update.mockImplementation(async ({ where, data, include, select }) => {
+    const existingUser = userStore[where.id];
+    if (!existingUser) {
+      throw new Error('User not found');
+    }
+    
+    const updatedUser = { ...existingUser, ...data, updatedAt: new Date() };
+    userStore[where.id] = updatedUser;
+    
+    // Update email index if email changed
+    if (data.email && data.email !== existingUser.email) {
+      delete userStore[existingUser.email];
+      userStore[data.email] = updatedUser;
+    }
+    
+    if (include?.team) updatedUser.team = generateTeam({ id: updatedUser.teamId });
+    
+    // Handle select clause
+    if (select) {
+      const selectedUser: any = {};
+      Object.keys(select).forEach(key => {
+        if (select[key] && updatedUser[key] !== undefined) {
+          selectedUser[key] = updatedUser[key];
+        }
+      });
+      return selectedUser;
+    }
+    
+    return updatedUser;
+  });
+
+  prismaMock.user.findMany.mockImplementation(async ({ where, select, orderBy, take, skip }) => {
+    // Get unique users by ID to avoid duplicates
+    const userMap = new Map();
+    Object.values(userStore).forEach((user: any) => {
+      if (user && user.id && !userMap.has(user.id)) {
+        userMap.set(user.id, user);
+      }
+    });
+    
+    let users = Array.from(userMap.values());
+    
+    // Filter by teamId if provided
+    if (where?.teamId) {
+      users = users.filter(user => user.teamId === where.teamId);
+    }
+    
+    // Filter by search if provided
+    if (where?.OR) {
+      const searchTerms = where.OR.map((term: any) => 
+        term.firstName?.contains || term.lastName?.contains || term.email?.contains
+      ).filter(Boolean);
+      
+      users = users.filter(user => 
+        searchTerms.some(term => 
+          user.firstName.includes(term) || 
+          user.lastName.includes(term) || 
+          user.email.includes(term)
+        )
+      );
+    }
+    
+    // Apply ordering
+    if (orderBy) {
+      const sortKeys = Object.keys(orderBy);
+      users.sort((a, b) => {
+        for (const key of sortKeys) {
+          const order = orderBy[key];
+          if (a[key] < b[key]) return order === 'asc' ? -1 : 1;
+          if (a[key] > b[key]) return order === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    // Apply pagination
+    const startIndex = skip || 0;
+    const endIndex = take ? startIndex + take : undefined;
+    users = users.slice(startIndex, endIndex);
+    
+    // Handle select clause
+    if (select) {
+      return users.map(user => {
+        const selectedUser: any = {};
+        Object.keys(select).forEach(key => {
+          if (select[key] && user[key] !== undefined) {
+            selectedUser[key] = user[key];
+          }
+        });
+        return selectedUser;
+      });
+    }
+    
+    return users;
+  });
+
+  prismaMock.user.count.mockImplementation(async ({ where }) => {
+    // Get unique users by ID to avoid duplicates
+    const userMap = new Map();
+    Object.values(userStore).forEach((user: any) => {
+      if (user && user.id && !userMap.has(user.id)) {
+        userMap.set(user.id, user);
+      }
+    });
+    
+    let users = Array.from(userMap.values());
+    
+    // Filter by teamId if provided
+    if (where?.teamId) {
+      users = users.filter(user => user.teamId === where.teamId);
+    }
+    
+    // Filter by search if provided
+    if (where?.OR) {
+      const searchTerms = where.OR.map((term: any) => 
+        term.firstName?.contains || term.lastName?.contains || term.email?.contains
+      ).filter(Boolean);
+      
+      users = users.filter(user => 
+        searchTerms.some(term => 
+          user.firstName.includes(term) || 
+          user.lastName.includes(term) || 
+          user.email.includes(term)
+        )
+      );
+    }
+    
+    return users.length;
+  });
+
+  prismaMock.user.delete.mockImplementation(async ({ where }) => {
+    const user = userStore[where.id];
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    delete userStore[where.id];
+    delete userStore[user.email];
+    
     return user;
   });
 
