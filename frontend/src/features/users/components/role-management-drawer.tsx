@@ -99,7 +99,7 @@ export const RoleManagementDrawer = ({
                         </h3>
                         <div className="mt-2 text-sm text-yellow-700">
                           <p>
-                            Changing a user's role will immediately affect their
+                            Changing a user&apos;s role will immediately affect their
                             permissions:
                           </p>
                           <ul className="mt-1 list-inside list-disc">
