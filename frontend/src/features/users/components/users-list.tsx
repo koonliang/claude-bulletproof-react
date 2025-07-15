@@ -6,13 +6,14 @@ import { Table } from '@/components/ui/table';
 import { formatDate } from '@/utils/format';
 
 import { useUsers } from '../api/get-users';
-import { EditUserDrawer } from './edit-user-drawer';
+
 import { DeleteUser } from './delete-user';
+import { EditUserDrawer } from './edit-user-drawer';
 
 export const UsersList = () => {
   const [searchParams] = useSearchParams();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  
+
   const searchQuery = searchParams.get('search') || '';
   const usersQuery = useUsers({
     params: { search: searchQuery },

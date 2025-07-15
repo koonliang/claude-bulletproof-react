@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Form, Input, Textarea, Select } from '@/components/ui/form';
-import { useNotifications } from '@/components/ui/notifications';
 import {
   Drawer,
   DrawerClose,
@@ -12,6 +10,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { Form, Input, Textarea, Select } from '@/components/ui/form';
+import { useNotifications } from '@/components/ui/notifications';
 
 import { createUserInputSchema, useCreateUser } from '../api/create-user';
 
@@ -23,7 +23,7 @@ type AddUserDrawerProps = {
 export const AddUserDrawer = ({ isOpen, onClose }: AddUserDrawerProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const { addNotification } = useNotifications();
-  
+
   const createUserMutation = useCreateUser({
     mutationConfig: {
       onSuccess: () => {
@@ -47,7 +47,8 @@ export const AddUserDrawer = ({ isOpen, onClose }: AddUserDrawerProps) => {
   const generatePassword = () => {
     // Generate a simple random password
     const length = 12;
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < length; i++) {
       password += charset.charAt(Math.floor(Math.random() * charset.length));
@@ -82,7 +83,7 @@ export const AddUserDrawer = ({ isOpen, onClose }: AddUserDrawerProps) => {
             >
               {({ register, formState, setValue, watch }) => {
                 const password = watch('password');
-                
+
                 return (
                   <div className="space-y-4">
                     <Input
@@ -163,14 +164,22 @@ export const AddUserDrawer = ({ isOpen, onClose }: AddUserDrawerProps) => {
                           </h3>
                           <div className="mt-2 text-sm text-blue-700">
                             <p>
-                              The new user will be added to your team with the selected role:
+                              The new user will be added to your team with the
+                              selected role:
                             </p>
-                            <ul className="mt-1 list-disc list-inside">
-                              <li><strong>USER:</strong> Can view and comment on discussions</li>
-                              <li><strong>ADMIN:</strong> Can manage users, discussions, and team settings</li>
+                            <ul className="mt-1 list-inside list-disc">
+                              <li>
+                                <strong>USER:</strong> Can view and comment on
+                                discussions
+                              </li>
+                              <li>
+                                <strong>ADMIN:</strong> Can manage users,
+                                discussions, and team settings
+                              </li>
                             </ul>
                             <p className="mt-2">
-                              <strong>Important:</strong> Make sure to share the password with the new user securely.
+                              <strong>Important:</strong> Make sure to share the
+                              password with the new user securely.
                             </p>
                           </div>
                         </div>

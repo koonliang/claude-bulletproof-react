@@ -154,7 +154,9 @@ export const Table = <Entry extends BaseEntity>({
         <TableHeader>
           <TableRow>
             {columns.map((column, index) => (
-              <TableHead key={`${column.title || 'column'}-${index}`}>{column.title}</TableHead>
+              <TableHead key={`${column.title || 'column'}-${index}`}>
+                {column.title}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>

@@ -24,9 +24,14 @@ api.interceptors.response.use(
   },
   (error) => {
     const message = error.response?.data?.message || error.message;
-    
+
     // Don't show error notifications for /auth/me 401 errors (expected when not logged in)
-    if (!(error.config?.url?.includes('/auth/me') && error.response?.status === 401)) {
+    if (
+      !(
+        error.config?.url?.includes('/auth/me') &&
+        error.response?.status === 401
+      )
+    ) {
       useNotifications.getState().addNotification({
         type: 'error',
         title: 'Error',
@@ -36,12 +41,15 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       const searchParams = new URLSearchParams(window.location.search);
-      const redirectTo = searchParams.get('redirectTo') || window.location.pathname;
-      
+      const redirectTo =
+        searchParams.get('redirectTo') || window.location.pathname;
+
       // Don't redirect for /auth/me endpoint (used for checking auth status)
       // and prevent infinite redirect loop on login page
-      if (!error.config?.url?.includes('/auth/me') && 
-          !window.location.pathname.includes('/auth/login')) {
+      if (
+        !error.config?.url?.includes('/auth/me') &&
+        !window.location.pathname.includes('/auth/login')
+      ) {
         window.location.href = paths.auth.login.getHref(redirectTo);
       }
     }

@@ -1,7 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Form, Input, Textarea } from '@/components/ui/form';
-import { Spinner } from '@/components/ui/spinner';
-import { useNotifications } from '@/components/ui/notifications';
 import {
   Drawer,
   DrawerClose,
@@ -10,9 +7,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { Form, Input, Textarea } from '@/components/ui/form';
+import { useNotifications } from '@/components/ui/notifications';
+import { Spinner } from '@/components/ui/spinner';
 
 import { useUser } from '../api/get-user';
 import { updateUserInputSchema, useUpdateUser } from '../api/update-user';
+
 import { RoleManagementDrawer } from './role-management-drawer';
 
 type EditUserDrawerProps = {
@@ -21,7 +22,11 @@ type EditUserDrawerProps = {
   onClose: () => void;
 };
 
-export const EditUserDrawer = ({ userId, isOpen, onClose }: EditUserDrawerProps) => {
+export const EditUserDrawer = ({
+  userId,
+  isOpen,
+  onClose,
+}: EditUserDrawerProps) => {
   const { addNotification } = useNotifications();
   const userQuery = useUser({ userId });
   const updateUserMutation = useUpdateUser({
@@ -67,7 +72,9 @@ export const EditUserDrawer = ({ userId, isOpen, onClose }: EditUserDrawerProps)
       <DrawerContent className="flex max-w-[800px] flex-col justify-between sm:max-w-[540px]">
         <div className="flex flex-col">
           <DrawerHeader>
-            <DrawerTitle>Edit User: {user.firstName} {user.lastName}</DrawerTitle>
+            <DrawerTitle>
+              Edit User: {user.firstName} {user.lastName}
+            </DrawerTitle>
           </DrawerHeader>
           <div className="px-6">
             <Form
@@ -111,7 +118,10 @@ export const EditUserDrawer = ({ userId, isOpen, onClose }: EditUserDrawerProps)
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Role:</span>
                     <span className="text-sm">{user.role}</span>
-                    <RoleManagementDrawer userId={userId} currentRole={user.role} />
+                    <RoleManagementDrawer
+                      userId={userId}
+                      currentRole={user.role}
+                    />
                   </div>
                 </div>
               )}

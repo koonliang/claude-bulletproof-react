@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Form, Select } from '@/components/ui/form';
-import { useNotifications } from '@/components/ui/notifications';
 import {
   Drawer,
   DrawerClose,
@@ -13,18 +11,26 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { Form, Select } from '@/components/ui/form';
+import { useNotifications } from '@/components/ui/notifications';
 
-import { updateUserRoleInputSchema, useUpdateUserRole } from '../api/update-user-role';
+import {
+  updateUserRoleInputSchema,
+  useUpdateUserRole,
+} from '../api/update-user-role';
 
 type RoleManagementDrawerProps = {
   userId: string;
   currentRole: 'USER' | 'ADMIN';
 };
 
-export const RoleManagementDrawer = ({ userId, currentRole }: RoleManagementDrawerProps) => {
+export const RoleManagementDrawer = ({
+  userId,
+  currentRole,
+}: RoleManagementDrawerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { addNotification } = useNotifications();
-  
+
   const updateUserRoleMutation = useUpdateUserRole({
     mutationConfig: {
       onSuccess: () => {
@@ -48,7 +54,11 @@ export const RoleManagementDrawer = ({ userId, currentRole }: RoleManagementDraw
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button size="sm" variant="outline" icon={<ShieldCheck className="size-4" />}>
+        <Button
+          size="sm"
+          variant="outline"
+          icon={<ShieldCheck className="size-4" />}
+        >
           Change Role
         </Button>
       </DrawerTrigger>
@@ -89,11 +99,18 @@ export const RoleManagementDrawer = ({ userId, currentRole }: RoleManagementDraw
                         </h3>
                         <div className="mt-2 text-sm text-yellow-700">
                           <p>
-                            Changing a user's role will immediately affect their permissions:
+                            Changing a user's role will immediately affect their
+                            permissions:
                           </p>
-                          <ul className="mt-1 list-disc list-inside">
-                            <li><strong>ADMIN:</strong> Can manage users, discussions, and all team settings</li>
-                            <li><strong>USER:</strong> Can view and comment on discussions only</li>
+                          <ul className="mt-1 list-inside list-disc">
+                            <li>
+                              <strong>ADMIN:</strong> Can manage users,
+                              discussions, and all team settings
+                            </li>
+                            <li>
+                              <strong>USER:</strong> Can view and comment on
+                              discussions only
+                            </li>
                           </ul>
                         </div>
                       </div>

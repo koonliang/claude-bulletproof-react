@@ -20,9 +20,11 @@ export type GetUsersResponse = {
   };
 };
 
-export const getUsers = (params: GetUsersParams = {}): Promise<GetUsersResponse> => {
+export const getUsers = (
+  params: GetUsersParams = {},
+): Promise<GetUsersResponse> => {
   const searchParams = new URLSearchParams();
-  
+
   if (params.search) {
     searchParams.append('search', params.search);
   }
@@ -35,7 +37,7 @@ export const getUsers = (params: GetUsersParams = {}): Promise<GetUsersResponse>
 
   const queryString = searchParams.toString();
   const url = queryString ? `/users?${queryString}` : '/users';
-  
+
   return api.get(url);
 };
 
@@ -51,7 +53,10 @@ type UseUsersOptions = {
   queryConfig?: QueryConfig<typeof getUsersQueryOptions>;
 };
 
-export const useUsers = ({ params = {}, queryConfig }: UseUsersOptions = {}) => {
+export const useUsers = ({
+  params = {},
+  queryConfig,
+}: UseUsersOptions = {}) => {
   return useQuery({
     ...getUsersQueryOptions(params),
     ...queryConfig,

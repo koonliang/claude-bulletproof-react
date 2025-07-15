@@ -85,14 +85,14 @@ export const usersHandlers = [
       const total = result.length;
       const paginatedResult = result.slice(offset, offset + limit);
 
-      return HttpResponse.json({ 
+      return HttpResponse.json({
         data: paginatedResult,
         meta: {
           total,
           limit,
           offset,
           hasMore: offset + limit < total,
-        }
+        },
       });
     } catch (error: any) {
       return HttpResponse.json(
@@ -121,7 +121,10 @@ export const usersHandlers = [
       });
 
       if (!targetUser) {
-        return HttpResponse.json({ message: 'User not found' }, { status: 404 });
+        return HttpResponse.json(
+          { message: 'User not found' },
+          { status: 404 },
+        );
       }
 
       return HttpResponse.json(sanitizeUser(targetUser));
@@ -134,108 +137,132 @@ export const usersHandlers = [
   }),
 
   // Update user profile (admin only)
-  http.put(`${env.API_URL}/users/:userId`, async ({ request, cookies, params }) => {
-    await networkDelay();
+  http.put(
+    `${env.API_URL}/users/:userId`,
+    async ({ request, cookies, params }) => {
+      await networkDelay();
 
-    try {
-      const { user, error } = requireAuth(cookies);
-      if (error) {
-        return HttpResponse.json({ message: error }, { status: 401 });
-      }
-      requireAdmin(user);
-
-      const userId = params.userId as string;
-      const data = (await request.json()) as UpdateUserBody;
-
-      const targetUser = db.user.findFirst({
-        where: {
-          id: { equals: userId },
-          teamId: { equals: user?.teamId },
-        },
-      });
-
-      if (!targetUser) {
-        return HttpResponse.json({ message: 'User not found' }, { status: 404 });
-      }
-
-      // Check if email is already taken by another user
-      if (data.email !== targetUser.email) {
-        const existingUser = db.user.findFirst({
-          where: { email: { equals: data.email } },
-        });
-        
-        if (existingUser && existingUser.id !== userId) {
-          return HttpResponse.json({ message: 'Email already in use' }, { status: 400 });
+      try {
+        const { user, error } = requireAuth(cookies);
+        if (error) {
+          return HttpResponse.json({ message: error }, { status: 401 });
         }
-      }
+        requireAdmin(user);
 
-      const result = db.user.update({
-        where: { id: { equals: userId } },
-        data,
-      });
-      
-      if (!result) {
-        return HttpResponse.json({ message: 'User not found' }, { status: 404 });
+        const userId = params.userId as string;
+        const data = (await request.json()) as UpdateUserBody;
+
+        const targetUser = db.user.findFirst({
+          where: {
+            id: { equals: userId },
+            teamId: { equals: user?.teamId },
+          },
+        });
+
+        if (!targetUser) {
+          return HttpResponse.json(
+            { message: 'User not found' },
+            { status: 404 },
+          );
+        }
+
+        // Check if email is already taken by another user
+        if (data.email !== targetUser.email) {
+          const existingUser = db.user.findFirst({
+            where: { email: { equals: data.email } },
+          });
+
+          if (existingUser && existingUser.id !== userId) {
+            return HttpResponse.json(
+              { message: 'Email already in use' },
+              { status: 400 },
+            );
+          }
+        }
+
+        const result = db.user.update({
+          where: { id: { equals: userId } },
+          data,
+        });
+
+        if (!result) {
+          return HttpResponse.json(
+            { message: 'User not found' },
+            { status: 404 },
+          );
+        }
+
+        await persistDb('user');
+        return HttpResponse.json(sanitizeUser(result));
+      } catch (error: any) {
+        return HttpResponse.json(
+          { message: error?.message || 'Server Error' },
+          { status: 500 },
+        );
       }
-      
-      await persistDb('user');
-      return HttpResponse.json(sanitizeUser(result));
-    } catch (error: any) {
-      return HttpResponse.json(
-        { message: error?.message || 'Server Error' },
-        { status: 500 },
-      );
-    }
-  }),
+    },
+  ),
 
   // Update user role (admin only)
-  http.put(`${env.API_URL}/users/:userId/role`, async ({ request, cookies, params }) => {
-    await networkDelay();
+  http.put(
+    `${env.API_URL}/users/:userId/role`,
+    async ({ request, cookies, params }) => {
+      await networkDelay();
 
-    try {
-      const { user, error } = requireAuth(cookies);
-      if (error) {
-        return HttpResponse.json({ message: error }, { status: 401 });
+      try {
+        const { user, error } = requireAuth(cookies);
+        if (error) {
+          return HttpResponse.json({ message: error }, { status: 401 });
+        }
+        requireAdmin(user);
+
+        const userId = params.userId as string;
+        const { role } = (await request.json()) as UpdateUserRoleBody;
+
+        const targetUser = db.user.findFirst({
+          where: {
+            id: { equals: userId },
+            teamId: { equals: user?.teamId },
+          },
+        });
+
+        if (!targetUser) {
+          return HttpResponse.json(
+            { message: 'User not found' },
+            { status: 404 },
+          );
+        }
+
+        // Prevent admin from demoting themselves
+        if (userId === user?.id && role === 'USER') {
+          return HttpResponse.json(
+            { message: 'Cannot change your own role' },
+            { status: 400 },
+          );
+        }
+
+        const result = db.user.update({
+          where: { id: { equals: userId } },
+          data: { role },
+        });
+
+        if (!result) {
+          return HttpResponse.json(
+            { message: 'User not found' },
+            { status: 404 },
+          );
+        }
+
+        await persistDb('user');
+        return HttpResponse.json(sanitizeUser(result));
+      } catch (error: any) {
+        return HttpResponse.json(
+          { message: error?.message || 'Server Error' },
+          { status: 500 },
+        );
       }
-      requireAdmin(user);
-
-      const userId = params.userId as string;
-      const { role } = (await request.json()) as UpdateUserRoleBody;
-
-      const targetUser = db.user.findFirst({
-        where: {
-          id: { equals: userId },
-          teamId: { equals: user?.teamId },
-        },
-      });
-
-      if (!targetUser) {
-        return HttpResponse.json({ message: 'User not found' }, { status: 404 });
-      }
-
-      // Prevent admin from demoting themselves
-      if (userId === user?.id && role === 'USER') {
-        return HttpResponse.json({ message: 'Cannot change your own role' }, { status: 400 });
-      }
-
-      const result = db.user.update({
-        where: { id: { equals: userId } },
-        data: { role },
-      });
-      
-      if (!result) {
-        return HttpResponse.json({ message: 'User not found' }, { status: 404 });
-      }
-      
-      await persistDb('user');
-      return HttpResponse.json(sanitizeUser(result));
-    } catch (error: any) {
-      return HttpResponse.json(
-        { message: error?.message || 'Server Error' },
-        { status: 500 },
-      );
-    }
-  }),
+    },
+  ),
 
   // Create new user (admin only)
   http.post(`${env.API_URL}/users`, async ({ request, cookies }) => {
@@ -254,9 +281,12 @@ export const usersHandlers = [
       const existingUser = db.user.findFirst({
         where: { email: { equals: data.email } },
       });
-      
+
       if (existingUser) {
-        return HttpResponse.json({ message: 'Email already in use' }, { status: 400 });
+        return HttpResponse.json(
+          { message: 'Email already in use' },
+          { status: 400 },
+        );
       }
 
       // Create new user in admin's team

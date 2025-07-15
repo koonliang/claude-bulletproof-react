@@ -11,7 +11,13 @@ export const updateUserRoleInputSchema = z.object({
 
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleInputSchema>;
 
-export const updateUserRole = ({ userId, data }: { userId: string; data: UpdateUserRoleInput }): Promise<User> => {
+export const updateUserRole = ({
+  userId,
+  data,
+}: {
+  userId: string;
+  data: UpdateUserRoleInput;
+}): Promise<User> => {
   return api.put(`/users/${userId}/role`, data);
 };
 
@@ -19,7 +25,9 @@ type UseUpdateUserRoleOptions = {
   mutationConfig?: MutationConfig<typeof updateUserRole>;
 };
 
-export const useUpdateUserRole = ({ mutationConfig }: UseUpdateUserRoleOptions = {}) => {
+export const useUpdateUserRole = ({
+  mutationConfig,
+}: UseUpdateUserRoleOptions = {}) => {
   const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};

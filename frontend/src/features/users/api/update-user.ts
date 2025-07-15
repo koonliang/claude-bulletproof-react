@@ -14,7 +14,13 @@ export const updateUserInputSchema = z.object({
 
 export type UpdateUserInput = z.infer<typeof updateUserInputSchema>;
 
-export const updateUser = ({ userId, data }: { userId: string; data: UpdateUserInput }): Promise<User> => {
+export const updateUser = ({
+  userId,
+  data,
+}: {
+  userId: string;
+  data: UpdateUserInput;
+}): Promise<User> => {
   return api.put(`/users/${userId}`, data);
 };
 
@@ -22,7 +28,9 @@ type UseUpdateUserOptions = {
   mutationConfig?: MutationConfig<typeof updateUser>;
 };
 
-export const useUpdateUser = ({ mutationConfig }: UseUpdateUserOptions = {}) => {
+export const useUpdateUser = ({
+  mutationConfig,
+}: UseUpdateUserOptions = {}) => {
   const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};
